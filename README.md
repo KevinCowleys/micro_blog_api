@@ -63,6 +63,36 @@ Password: `password`
 
 ## API
 
+### Register
+
+Allows you to create accounts.
+
+```
+http://127.0.0.1:3000/api/v1/register
+```
+
+Post:
+
+```
+{
+    "user": {
+        "name": "New User",
+        "email": "new_user@fake.com",
+        "birth_date": "2021-12-19T20:05:21.111Z"
+        "password": "Password1",
+        "password_confirm": "Password1"
+    }
+}
+```
+
+Response:
+
+```
+{
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxODEwfQ.Scyed8yk2N3dMxrsBgndKjN-FLbG8tKTRVKppF7VJRU"
+}
+```
+
 ### Authentication
 
 Firstly you need to athenticate at the following url which will return a JWT token.
