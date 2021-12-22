@@ -31,6 +31,9 @@ Rails.application.routes.draw do
       # Authentication routes
       post 'authenticate', to: 'authentication#create'
 
+      # Register Route
+      post 'register', to: 'registrations#create'
+
       # Profile routes
       get ':username', to: 'profile#index', username: %r{[^/]+}
       get 'profile/settings', to: 'profile#settings'
