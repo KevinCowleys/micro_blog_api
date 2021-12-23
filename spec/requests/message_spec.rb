@@ -4,6 +4,7 @@ describe 'Message API', type: :request do
   let!(:first_user) { FactoryBot.create(:user, username: 'user1', email: 'user1@fake.com', password: 'Password1') }
   let!(:second_user) { FactoryBot.create(:user, username: 'user2', email: 'user2@fake.com', password: 'Password1') }
   let!(:third_user) { FactoryBot.create(:user, username: 'user3', email: 'user3@fake.com', password: 'Password1') }
+  let!(:jwt) { confirm_and_login_user(first_user) }
 
   describe 'GET /conversations/:id/messages' do
     let!(:first_conversation) do
@@ -19,9 +20,9 @@ describe 'Message API', type: :request do
       FactoryBot.create(:message, content: 'Message 2', conversation_id: second_conversation.id, user_id: third_user.id)
     end
 
-    it 'returns all conversations' do
+    it 'returns all messages' do
       get "/api/v1/conversations/#{first_conversation.id}/messages",
-          headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+          headers: { 'Authorization' => "Bearer #{jwt}" }
 
       expect(response).to have_http_status(:success)
       expect(response_body.size).to eq(1)
@@ -35,7 +36,7 @@ describe 'Message API', type: :request do
 
     it 'returns error when conversation doesn\'t exist and when not conversation member' do
       get "/api/v1/conversations/#{second_conversation.id}/messages",
-          headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+          headers: { 'Authorization' => "Bearer #{jwt}" }
 
       expect(response).to have_http_status(:unprocessable_entity)
     end
@@ -48,7 +49,7 @@ describe 'Message API', type: :request do
   end
 
   describe 'POST /conversations/:id/messages' do
-    it 'create a new conversation' do
+    it 'create a new message' do
       FactoryBot.create(:conversation, sender_id: first_user.id, recipient_id: second_user.id)
       expect do
         post '/api/v1/conversations/1/messages', params: {
@@ -56,7 +57,7 @@ describe 'Message API', type: :request do
             'content': 'New Message'
           }
         },
-                                                 headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+                                                 headers: { 'Authorization' => "Bearer #{jwt}" }
       end.to change { Message.count }.from(0).to(1)
 
       expect(response).to have_http_status(:created)
@@ -73,7 +74,7 @@ describe 'Message API', type: :request do
           'content': 'New Message'
         }
       },
-                                               headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+                                               headers: { 'Authorization' => "Bearer #{jwt}" }
 
       expect(response).to have_http_status(:unprocessable_entity)
     end

@@ -5,11 +5,12 @@ describe 'Authentication', type: :request do
     let(:user) { FactoryBot.create(:user, email: 'BookSeller99@fake.com', password: 'Password1') }
 
     it 'authenticated the client' do
+      jwt = confirm_and_login_user(user)
       post '/api/v1/authenticate', params: { email: user.email, password: 'Password1' }
 
       expect(response).to have_http_status(:created)
       expect(response_body).to eq({
-                                    'token' => 'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxfQ.DiPWrOKsx3sPeVClrm_j07XNdSYHgBa3Qctosdxax3w'
+                                    'token' => jwt
                                   })
     end
 

@@ -3,11 +3,12 @@ require 'rails_helper'
 describe 'Profile API', type: :request do
   let!(:first_user) { FactoryBot.create(:user, username: 'user1', email: 'user1@fake.com', password: 'Password1') }
   let!(:second_user) { FactoryBot.create(:user, username: 'user2', email: 'user2@fake.com', password: 'Password1') }
+  let!(:jwt) { confirm_and_login_user(first_user) }
 
   describe 'GET /:username' do
     it 'returns user profile' do
       get "/api/v1/#{first_user.username}",
-          headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+          headers: { 'Authorization' => "Bearer #{jwt}" }
 
       expect(response).to have_http_status(:success)
       expect(response_body.size).to be > 0
@@ -43,14 +44,14 @@ describe 'Profile API', type: :request do
     it 'errors when trying to view when blocked' do
       FactoryBot.create(:block, blocked_id: first_user.id, blocked_by_id: second_user.id)
       get "/api/v1/#{second_user.username}",
-          headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+          headers: { 'Authorization' => "Bearer #{jwt}" }
 
       expect(response).to have_http_status(:unauthorized)
     end
 
     it 'errors when user doesn\'t exist' do
       get '/api/v1/username_does_not_exist',
-          headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+          headers: { 'Authorization' => "Bearer #{jwt}" }
 
       expect(response).to have_http_status(:unprocessable_entity)
     end
@@ -59,7 +60,7 @@ describe 'Profile API', type: :request do
   describe 'GET /profile/settings' do
     it 'returns logged in user settings' do
       get '/api/v1/profile/settings',
-          headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+          headers: { 'Authorization' => "Bearer #{jwt}" }
 
       expect(response).to have_http_status(:success)
       expect(response_body.size).to be > 0
@@ -94,7 +95,7 @@ describe 'Profile API', type: :request do
           email: first_user.email,
           bio: first_user.bio
         }
-      }, headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+      }, headers: { 'Authorization' => "Bearer #{jwt}" }
 
       expect(response).to have_http_status(:no_content)
     end

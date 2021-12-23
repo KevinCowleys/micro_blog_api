@@ -4,6 +4,7 @@ describe 'Conversation API', type: :request do
   let!(:first_user) { FactoryBot.create(:user, username: 'user1', email: 'user1@fake.com', password: 'Password1') }
   let!(:second_user) { FactoryBot.create(:user, username: 'user2', email: 'user2@fake.com', password: 'Password1') }
   let!(:third_user) { FactoryBot.create(:user, username: 'user3', email: 'user3@fake.com', password: 'Password1') }
+  let!(:jwt) { confirm_and_login_user(first_user) }
 
   describe 'GET /conversations' do
     let!(:first_conversation) do
@@ -15,7 +16,7 @@ describe 'Conversation API', type: :request do
 
     it 'returns all conversations' do
       get '/api/v1/conversations',
-          headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+          headers: { 'Authorization' => "Bearer #{jwt}" }
 
       expect(response).to have_http_status(:success)
       expect(response_body.size).to eq(1)
@@ -42,7 +43,7 @@ describe 'Conversation API', type: :request do
     it 'create a new conversation' do
       expect do
         post "/api/v1/conversations?recipient_id=#{second_user.id}", params: {},
-                                                                     headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+                                                                     headers: { 'Authorization' => "Bearer #{jwt}" }
       end.to change { Conversation.count }.from(0).to(1)
 
       expect(response).to have_http_status(:created)
@@ -53,7 +54,7 @@ describe 'Conversation API', type: :request do
 
     it 'returns error when recipient doesn\'t exist' do
       post '/api/v1/conversations?recipient_id=1447', params: {},
-                                                      headers: { 'Authorization' => 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSJ9.M1vu6qDej7HzuSxcfbE6KAMekNUXB3EWtxwS0pg4UGg' }
+                                                      headers: { 'Authorization' => "Bearer #{jwt}" }
 
       expect(response).to have_http_status(:unprocessable_entity)
     end
